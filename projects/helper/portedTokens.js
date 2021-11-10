@@ -12,11 +12,11 @@ async function transformFantomAddress() {
         if (addr.toLowerCase() === "0x658b0c7613e890ee50b8c4bc6a3f41ef411208ad") { // fETH
             return "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
         }
-        if (addr.toLowerCase() === "0xe1146b9ac456fcbb60644c36fd3f868a9072fc6e") { // fBTC
-            return "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599"
-        }
         if (addr.toLowerCase() === "0x82f0b8b456c1a451378467398982d4834b6829c1") { // MIM
             return "0x99d8a9c45b2eca8864373a26d1459e3dff1e17f3"
+        }
+        if(compareAddresses(addr, "0x260b3e40c714ce8196465ec824cd8bb915081812")){
+            return "polygon:0x4a81f8796e0c6ad4877a51c86693b0de8093f2ef" // IRON ICE
         }
         const srcToken = multichainTokens.find(token => token.chainId === "250" && token.token === addr.toLowerCase())
         if (srcToken !== undefined) {
@@ -46,7 +46,7 @@ async function transformAvaxAddress() {
 
     return (addr) => {
         if(compareAddresses(addr, "0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7")){ //WAVAX
-            return `avax:${addr}`
+          return `avax:${addr}`
         }
         const srcToken = bridgeTokensOld.data.find(token => compareAddresses(token["Avalanche Token Address"], addr))
         if (srcToken !== undefined && srcToken["Ethereum Token Decimals"] === srcToken["Avalanche Token Decimals"]) {
@@ -71,6 +71,12 @@ async function transformBscAddress() {
         const srcToken = binanceBridge.find(token => token.ethContractAddress !== "" && token.bscContractAddress.toLowerCase() === addr.toLowerCase())
         if (srcToken !== undefined && srcToken.bscContractDecimal === srcToken.ethContractDecimal) {
             return srcToken.ethContractAddress
+        }
+        if (addr.toLowerCase() == "0xe1c110e1b1b4a1ded0caf3e42bfbdbb7b5d7ce1c") {
+            return 'avax:0xe1c110e1b1b4a1ded0caf3e42bfbdbb7b5d7ce1c'
+        }
+        if (addr.toLowerCase() == "0x2170ed0880ac9a755fd29b2688956bd959f933f8") {
+            return '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
         }
         return `bsc:${addr}`
     }
@@ -129,12 +135,39 @@ async function transformXdaiAddress() {
 async function transformOkexAddress() {
     const okexBridge = (await utils.fetchURL("https://www.okex.com/v2/asset/cross-chain/currencyAddress")).data.data.tokens
     // TODO
+    return (addr) => {
+        if(compareAddresses(addr, "0xe1c110e1b1b4a1ded0caf3e42bfbdbb7b5d7ce1c")){
+            return "avax:0xe1c110e1b1b4a1ded0caf3e42bfbdbb7b5d7ce1c"
+        }
+        return `okexchain:${addr}`;
+    };
 }
 
 async function transformHecoAddress() {
   return (addr) => {
-    return `heco:${addr}`;
+    if (addr.toLowerCase() == '0xe1c110e1b1b4a1ded0caf3e42bfbdbb7b5d7ce1c') {
+        return 'avax:0xe1c110e1b1b4a1ded0caf3e42bfbdbb7b5d7ce1c';
+    } else {
+        return `heco:${addr}`;
+    }
   };
+}
+
+async function transformCeloAddress() {
+    return (addr) => {
+        if (addr.toLowerCase() === "0xd8763cba276a3738e6de85b4b3bf5fded6d6ca73") {
+            //return "0xd71ecff9342a5ced620049e616c5035f1db98620" //sEUR
+            return "celo-euro"
+        }
+        if (addr.toLowerCase() === "0x765de816845861e75a25fca122bb6898b8b1282a") {
+            //return "0x8e870d67f660d95d5be530380d0ec0bd388289e1" //USDP
+            return "celo-dollar"
+        }
+        if (addr.toLowerCase() === "0x471ece3750da237f93b8e339c536989b8978a438") {
+            return "celo" //CELO
+        }
+        return `celo:${addr}`;
+    };
 }
 
 async function transformHarmonyAddress() {
@@ -143,6 +176,12 @@ async function transformHarmonyAddress() {
     return (addr) => {
         if(compareAddresses(addr, "0x6983D1E6DEf3690C4d616b13597A09e6193EA013")){
             return "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        }
+        if(compareAddresses(addr, "0x224e64ec1bdce3870a6a6c777edd450454068fec")){
+            return "0xa47c8bf37f92abed4a126bda807a7b7498661acd"
+        }
+        if(compareAddresses(addr, "0xe1c110e1b1b4a1ded0caf3e42bfbdbb7b5d7ce1c")){
+            return "avax:0xe1c110e1b1b4a1ded0caf3e42bfbdbb7b5d7ce1c"
         }
         const srcToken = bridge.find(token => compareAddresses(addr, token.hrc20Address))
         if (srcToken !== undefined) {
@@ -157,14 +196,49 @@ async function transformOptimismAddress() {
     const bridge = (await utils.fetchURL("https://static.optimism.io/optimism.tokenlist.json")).data.tokens
 
     return (addr) => {
-        const dstToken = bridge.find(token => compareAddresses(addr, token.address))
+        if(compareAddresses(addr, "0x4200000000000000000000000000000000000006")){
+            return "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        }
+        const dstToken = bridge.find(token => compareAddresses(addr, token.address) && token.chainId === 10)
         if (dstToken !== undefined) {
             const srcToken = bridge.find(token => dstToken.logoURI === token.logoURI && token.chainId === 1)
             if(srcToken !== undefined){
                 return srcToken.address
             }
         }
-        return `optimism:${addr}`
+        return addr //`optimism:${addr}` // TODO: Fix
+    }
+}
+
+async function transformMoonriverAddress() {
+
+    return (addr) => {
+        if(compareAddresses(addr, "0xe1c110e1b1b4a1ded0caf3e42bfbdbb7b5d7ce1c")){
+            return "avax:0xe1c110e1b1b4a1ded0caf3e42bfbdbb7b5d7ce1c"
+        }
+        return `moonriver:${addr}` //`optimism:${addr}` // TODO: Fix
+    }
+}
+
+async function transformArbitrumAddress() {
+    const bridge = (await utils.fetchURL("https://bridge.arbitrum.io/token-list-42161.json")).data.tokens
+
+    return (addr) => {
+        if(compareAddresses(addr, "0xFEa7a6a0B346362BF88A9e4A88416B77a57D6c2A")){
+            return "0x99d8a9c45b2eca8864373a26d1459e3dff1e17f3" // MIM
+        }
+        if(compareAddresses(addr, "0xDBf31dF14B66535aF65AaC99C32e9eA844e14501")){
+            return "0xeb4c2781e4eba804ce9a9803c67d0893436bb27d" // renBTC
+        }
+        if(compareAddresses(addr, "0x9ef758ac000a354479e538b8b2f01b917b8e89e7")){
+            return "polygon:0x3dc7b06dd0b1f08ef9acbbd2564f8605b4868eea" // XDO
+        }
+
+        const dstToken = bridge.find(token => compareAddresses(addr, token.address))
+        if (dstToken !== undefined) {
+            return dstToken.extensions.l1Address
+        }
+        return `arbitrum:${addr}`; 
     }
 }
 
@@ -186,7 +260,59 @@ function fixHarmonyBalances(balances){
     }
 }
 
+async function transformKccAddress() {
+    return (addr) => {
+        if(compareAddresses(addr, "0xe1c110e1b1b4a1ded0caf3e42bfbdbb7b5d7ce1c")){
+            return "avax:0xe1c110e1b1b4a1ded0caf3e42bfbdbb7b5d7ce1c"
+        }
+        if(compareAddresses(addr.toLowerCase(), "0x0039f574ee5cc39bdd162e9a88e3eb1f111baf48")){
+            return "0xdac17f958d2ee523a2206206994597c13d831ec7"
+        }
+        if(compareAddresses(addr, "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48")){
+            return "okexchain:0xc946daf81b08146b1c7a8da2a851ddf2b3eaaf85"
+        }
+        if(compareAddresses(addr, "0x639a647fbe20b6c8ac19e48e2de44ea792c62c5c")){
+            return "bsc:0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"
+        }
+        if(compareAddresses(addr, "0xe3f5a90f9cb311505cd691a46596599aa1a0ad7d")){
+            return "0x4fabb145d64652a948d72533023f6e7a623c7c53"
+        }
+        if(compareAddresses(addr, "0xc9baa8cfdde8e328787e29b4b078abf2dadc2055")){
+            return "0x6b175474e89094c44da98b954eedeac495271d0f"
+        }
+        if(compareAddresses(addr, "0x218c3c3d49d0e7b37aff0d8bb079de36ae61a4c0")){
+            return "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599"
+        }
+        if(compareAddresses(addr, "0xf55af137a98607f7ed2efefa4cd2dfe70e4253b1")){
+            return "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        }
+        if(compareAddresses(addr, "0x980a5afef3d17ad98635f6c5aebcbaeded3c3430")){
+            return "okexchain:0xc946daf81b08146b1c7a8da2a851ddf2b3eaaf85"
+        }
+        return `kcc:${addr}`;
+    };
+}
+
+const chainTransforms = {
+    celo: transformCeloAddress,
+    fantom: transformFantomAddress,
+    optimism: transformOptimismAddress,
+    harmony: transformHarmonyAddress,
+    arbitrum: transformArbitrumAddress,
+}
+async function getChainTransform(chain){
+    if(chain === 'ethereum'){
+        return id=>id
+    }
+    if(chainTransforms[chain]!== undefined){
+        return chainTransforms[chain]()
+    }
+    return addr=>`${chain}:${addr}`
+}
+
 module.exports = {
+    getChainTransform,
+    transformCeloAddress,
     transformFantomAddress,
     transformBscAddress,
     transformPolygonAddress,
@@ -195,6 +321,10 @@ module.exports = {
     transformHecoAddress,
     transformHarmonyAddress,
     transformOptimismAddress,
+    transformMoonriverAddress,
     fixAvaxBalances,
-    fixHarmonyBalances
+    transformOkexAddress,
+    transformKccAddress,
+    transformArbitrumAddress,
+    fixHarmonyBalances,
 };

@@ -1,6 +1,6 @@
 const {addFundsInMasterChef} = require('../helper/masterchef')
 const sdk = require('@defillama/sdk')
-const staking = require('../helper/staking')
+const {staking} = require('../helper/staking')
 const {transformFantomAddress} = require('../helper/portedTokens')
 const poolInfoAbi = require('./abi.json')
 
@@ -24,8 +24,9 @@ async function tvl(_t, _b, chainBlocks){
 }
 
 module.exports={
-    staking:{
-        tvl: staking('0xb632c5d42BD4a44a617608Ad1c7d38f597E22E3C', '0x05848b832e872d9edd84ac5718d58f21fd9c9649', 'fantom')
+    methodology: 'TVL counts the fUSD deposited to creat ifUSD and the tokens in the masterchef. Steak is counted towards staking and TUSD is used to represent fUSD since fUSD is not on CoinGecko.',
+    fantom:{
+        staking: staking('0xb632c5d42BD4a44a617608Ad1c7d38f597E22E3C', '0x05848b832e872d9edd84ac5718d58f21fd9c9649', 'fantom'),
+        tvl
     },
-    tvl
 }

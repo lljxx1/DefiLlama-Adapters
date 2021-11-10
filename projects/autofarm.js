@@ -2,7 +2,19 @@ const utils = require('./helper/utils');
 
 const bscEndpoint = "https://static.autofarm.network/bsc/farm_data.json"
 const polygonEndpoint = "https://static.autofarm.network/polygon/stats.json"
-const hecoEndpoint = "https://api2.autofarm.network/heco/get_stats"
+const hecoEndpoint = "https://static.autofarm.network/heco/stats.json"
+const avaxEndpoint = "https://static.autofarm.network/avax/stats.json"
+const fantomEndpoint = "https://static.autofarm.network/fantom/stats.json"
+
+async function fantom() {
+  const data = await utils.fetchURL(fantomEndpoint)
+  return data.data.platformTVL
+}
+
+async function avax() {
+  const data = await utils.fetchURL(avaxEndpoint)
+  return data.data.platformTVL
+}
 
 async function polygon() {
   const data = await utils.fetchURL(polygonEndpoint)
@@ -14,6 +26,19 @@ async function heco() {
   return data.data.platformTVL
 }
 
+async function moonriver() {
+  const data = await utils.fetchURL("https://static.autofarm.network/moonriver/stats.json")
+  return data.data.platformTVL
+}
+
+async function okex() {
+  const data = await utils.fetchURL("https://static.autofarm.network/okex/stats.json")
+  return data.data.platformTVL
+}
+async function celo() {
+  const data = await utils.fetchURL("https://static.autofarm.network/celo/stats.json")
+  return data.data.platformTVL
+}
 
 async function bsc() {
   var bscPools = await utils.fetchURL(bscEndpoint)
@@ -22,7 +47,7 @@ async function bsc() {
 }
 
 async function fetch() {
-  return (await polygon())+(await bsc())
+  return (await polygon())+(await bsc())+(await heco())+(await avax())+(await fantom()) + (await moonriver()+(await okex())+(await celo()))
 }
 
 module.exports = {
@@ -31,6 +56,24 @@ module.exports = {
   },
   polygon:{
     fetch: polygon
+  },
+  heco:{
+    fetch: heco
+  },
+  avalanche:{
+    fetch: avax
+  },
+  fantom:{
+    fetch: fantom
+  },
+  moonriver:{
+    fetch: moonriver
+  },
+  okexchain:{
+    fetch: okex
+  },
+  celo:{
+    fetch: celo
   },
   fetch
 }
